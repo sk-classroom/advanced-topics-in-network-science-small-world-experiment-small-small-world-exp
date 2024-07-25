@@ -1,0 +1,31 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Test the APL
+      id: test-the-apl
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Test the APL
+        setup-command: pip install scipy numpy pandas igraph papermill nbmerge gdown
+          && gdown https://drive.google.com/file/d/1fUN9U7J80MEI8s3Q86EOhivtb3Ol8BBj
+        command: bash run_grading.sh
+        timeout: 10
+        max-score: 20
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        TEST-THE-APL_RESULTS: "${{steps.test-the-apl.outputs.result}}"
+      with:
+        runners: test-the-apl
